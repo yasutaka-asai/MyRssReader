@@ -21,17 +21,17 @@ const urlListJson = [
             {
                 "name": "Azure service updates",
                 "url": "https://www.microsoft.com/releasecommunications/api/v2/azure/rss"
-            }
+            },
+            {
+                "name": "The Verge",
+                "url": "https://www.theverge.com/rss/index.xml"
+            },
         ]
     },
     {
         "category": "news-motivate",
         "slackHook": newsMotivateHook,
         "contents": [
-            {
-                "name": "はてなブックマーク - 人気エントリー - テクノロジー",
-                "url": "http://b.hatena.ne.jp/hotentry/it.rss"
-            },
             {
                 "name": "Konifar's ZATSU",
                 "url": "http://konifar-zatsu.hatenadiary.jp/rss"
@@ -78,8 +78,13 @@ const urlListJson = [
             },
             {
                 "name": "OpenAI",
-                "url": "https://blog.openai.com/rss/"
+                "url": "https://openai.com/news/rss.xml"
             },
+            {
+                "name": "Huggingface Daily Papers",
+                "url": "https://rsshub.app/huggingface/daily-papers"
+            },
+
         ]
     },
 ]
@@ -115,8 +120,11 @@ export async function getRssFeed(myTimer: Timer, context: InvocationContext): Pr
                             continue;
                         }
 
-                        // コンテンツを要約
-                        const summary = await summarizeContent(item.content);
+                        // 日本語ではない記事のみ要約する
+                        const summary = !shouldSummarize(item.content) 
+                            ? await summarizeContent(item.content)
+                            : item.content;
+
                         context.log(summary);
                         await postToSlack(
                             item.title,
@@ -134,6 +142,33 @@ export async function getRssFeed(myTimer: Timer, context: InvocationContext): Pr
         console.error(error);
     }
 }
+
+// 要約が必要かどうか判定する関数
+const shouldSummarize = (text: string): boolean => {
+    // 文字数が200文字以上、または日本語でない場合は要約が必要
+
+    // テキストが無い場合は要約は不要
+    if (!text) return false;
+
+    // 文字数が200文字以上なら要約が必要
+    if (text.length > 200) return true;
+    
+    // 日本語文字をカウント
+    const japaneseCount = Array.from(text).filter(char => {
+        const code = char.charCodeAt(0);
+        return (
+            // ひらがな
+            (code >= 0x3040 && code <= 0x309F) ||
+            // カタカナ
+            (code >= 0x30A0 && code <= 0x30FF) ||
+            // 漢字
+            (code >= 0x4E00 && code <= 0x9FFF)
+        );
+    }).length;
+    
+    // 全体の10%以上が日本語文字なら日本語とみなして要約不要
+    return (japaneseCount / text.length) > 0.1;
+};
 
 // RSSフィードから得られたコンテンツを日本語で要約する関数
 const summarizeContent = async (content: string): Promise<string> => {
@@ -155,8 +190,6 @@ const summarizeContent = async (content: string): Promise<string> => {
 - **結論**: 記事の結論やまとめ。
 - **背景情報**: 記事が書かれた背景や文脈。
 - **具体例**: 記事中の具体的な例やデータ。
-- **将来の展望**: 記事の内容に基づく将来の可能性や展望。
-- **教育業界への関連**: 教育分野とは関係なければ言及しなくて良い
 
 この記事の要約では、以上の点に注意してまとめてください。
 
