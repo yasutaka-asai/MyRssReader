@@ -121,7 +121,7 @@ export async function getRssFeed(myTimer: Timer, context: InvocationContext): Pr
                         }
 
                         // 日本語ではない記事のみ要約する
-                        const summary = !shouldSummarize(item.content) 
+                        const summary = shouldSummarize(item.content) 
                             ? await summarizeContent(item.content)
                             : item.content;
 
