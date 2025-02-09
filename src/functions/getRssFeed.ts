@@ -36,12 +36,24 @@ const urlListJson = [
                 "name": "Konifar's ZATSU",
                 "url": "http://konifar-zatsu.hatenadiary.jp/rss"
             },
+            {
+                "name": "はてなブックマーク - 人気エントリー - テクノロジー",
+                "url": "https://b.hatena.ne.jp/hotentry/it.rss"
+            },
         ]
     },
     {
         "category": "blog-tech",
         "slackHook": blogTechHook,
         "contents": [
+            {
+                "name": "Qiita トレンド",
+                "url": "https://qiita.com/popular-items/feed.atom"
+            },
+            {
+                "name": "Zenn トレンド",
+                "url": "https://zenn.dev/feed"
+            },
             {
                 "name": "GitHubブログ",
                 "url": "https://blog.github.com/jp/all.atom"
